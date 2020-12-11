@@ -1,0 +1,6 @@
+*.csv
+*.gzip
+*.zip
+*.tar
+.DS_Store
+.ipynb_checkpoints/
