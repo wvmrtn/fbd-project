@@ -1,6 +1,9 @@
 *.csv
-*.gzip
+*.gz
 *.zip
 *.tar
 .DS_Store
 .ipynb_checkpoints/
+*.numbers
+__pycache__
+*.icloud
