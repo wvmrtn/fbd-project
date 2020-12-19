@@ -29,11 +29,15 @@ if __name__ == '__main__':
     # column index correspond to permno (index 0 is permno 0 and so on)
     const_mat = pd.DataFrame(index=dates.strftime('%Y-%m'),
                              columns=range(10000, 99999+1),
-                             data=0)
+                             data=np.nan)
     # 1e5 is the max val of permno
 
     dates = dates.strftime("%Y-%m-%d")
     for d in dates:
         const_mat = update_constituents(const_mat, db, d)
+
+    # remove stocks that have never been in the russell3000
+    const_mat.dropna(how='all', axis=1, inplace=True)
+    const_mat.fillna(0, inplace=True)
 
     const_mat.to_csv('data/russell3000.csv.gz', compression='gzip')
