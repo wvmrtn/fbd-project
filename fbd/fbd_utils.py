@@ -57,7 +57,7 @@ def download_returns(db, start, end, permnos):
     # clean into dataframe
     X = pd.DataFrame()
     for per, df in data.groupby('permno'):
-        df = df.drop(columns='permno')
+        df.drop(columns='permno', inplace=True)
         df.columns = [int(per)]
         X = pd.concat([X, df], axis=1, ignore_index=False)
 
@@ -69,8 +69,14 @@ def download_info(db, permnos):
     # get information of stocks
     data = \
         db.raw_sql(
-            f"select permno, date, ret from crsp.dsf where permno in "
+            f"select permno, comnam, ticker from crsp.dse where permno in "
             f"({', '.join(permnos)})")
+
+    data.dropna(axis=0, subset=['comnam', 'ticker'], how='all', inplace=True)
+    data.drop_duplicates(inplace=True)
+    data.reset_index(inplace=True, drop=True)
+
+    return data
 
 
 if __name__ == '__main__':
