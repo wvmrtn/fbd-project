@@ -53,7 +53,7 @@ def download_returns(db, start, end, permnos):
             f"<= '{end}'")
 
     data = data.set_index('date')
-    
+
     # clean into dataframe
     X = pd.DataFrame()
     for per, df in data.groupby('permno'):
@@ -62,8 +62,16 @@ def download_returns(db, start, end, permnos):
         X = pd.concat([X, df], axis=1, ignore_index=False)
 
     return X
-        
-    return data
+
+
+def download_info(db, permnos):
+
+    # get information of stocks
+    data = \
+        db.raw_sql(
+            f"select permno, date, ret from crsp.dsf where permno in "
+            f"({', '.join(permnos)})")
+
 
 if __name__ == '__main__':
     pass
