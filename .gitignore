@@ -7,3 +7,4 @@
 *.numbers
 __pycache__
 *.icloud
+*.parquet

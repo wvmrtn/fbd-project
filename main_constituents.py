@@ -12,6 +12,7 @@ import os
 import pandas as pd
 import wrds
 # import local libraries
+from fbd import START, END
 from fbd import update_constituents
 
 if __name__ == '__main__':
@@ -20,10 +21,7 @@ if __name__ == '__main__':
     db = wrds.Connection(wrds_username=os.environ['WRDS_USER'],
                          wrds_password=os.environ['WRDS_PASS'])
 
-    start = '2010-01-01'
-    end = '2019-12-31'
-
-    dates = pd.date_range(start, end, freq='m')
+    dates = pd.date_range(START, END, freq='m')
 
     # create matrix of constituent matrix, 1 = belongs to Russell 3000.
     # column index correspond to permno (index 0 is permno 0 and so on)

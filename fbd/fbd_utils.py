@@ -43,5 +43,27 @@ def update_constituents(const_mat, db, date, n=3000):
     return const_mat
 
 
+def download_returns(db, start, end, permnos):
+
+    # get stock returns
+    data = \
+        db.raw_sql(
+            f"select permno, date, ret from crsp.dsf where permno in "
+            f"({', '.join(permnos)}) and date >= '{start}' and date "
+            f"<= '{end}'")
+
+    data = data.set_index('date')
+    
+    # clean into dataframe
+    X = pd.DataFrame()
+    for per, df in data.groupby('permno'):
+        df = df.drop(columns='permno')
+        df.columns = [int(per)]
+        X = pd.concat([X, df], axis=1, ignore_index=False)
+
+    return X
+        
+    return data
+
 if __name__ == '__main__':
     pass
