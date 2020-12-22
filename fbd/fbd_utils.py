@@ -7,6 +7,9 @@
 
 # import standard libraries
 from datetime import timedelta
+import os
+import requests
+from urllib.request import urlopen
 # import third-party libraries
 import pandas as pd
 # import local libraries
@@ -77,6 +80,31 @@ def download_info(db, permnos):
     data.reset_index(inplace=True, drop=True)
 
     return data
+
+
+def download_fama(start, end):
+
+    url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_5_Factors_2x3_daily_CSV.zip"
+
+    # read zip file
+    filename = 'data/fama/fama_french.csv.zip'
+    url = urlopen(url)
+    output = open(filename, 'wb')
+    output.write(url.read())
+    output.close()
+
+    fama = pd.read_csv(filename, compression='zip', index_col=0,
+                       header=2)
+    os.remove(filename)
+
+    # turn index to date
+    fama.index = pd.to_datetime(fama.index, format='%Y%m%d')
+
+    # get between start and end
+    fama = fama[(fama.index >= start) & (fama.index <= end)]
+
+    # save localy
+    fama.to_csv('data/fama/fama.csv.gz', compression='gzip')
 
 
 if __name__ == '__main__':
