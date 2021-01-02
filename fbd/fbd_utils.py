@@ -7,10 +7,11 @@
 
 # import standard libraries
 from datetime import timedelta
+from glob import glob
 import os
-import requests
 from urllib.request import urlopen
 # import third-party libraries
+import dask
 import pandas as pd
 # import local libraries
 
@@ -106,6 +107,47 @@ def download_fama(start, end):
     # save localy
     fama.to_csv('data/fama/fama.csv.gz', compression='gzip')
 
+
+def read_parquet(filename, permnos=None):
+    """Read parquet and get read columns corresponding to permnos.
+
+    Parameters
+    ----------
+    filename : str
+        Filename of parquet to get data.
+    permnos : list of str, optional
+        List of permnos to parse. The default is None.
+
+    Returns
+    -------
+    res : pd.DataFrame
+        Returns of permnos.
+
+    """
+    res = pd.read_parquet(filename, engine='pyarrow', columns=permnos)
+    return res
+
+
+def get_permno_returns(permno, const_mat, start=None, end=None):
+
+    const_p = const_mat[permno]
+    dates = const_p[const_p == 1].index.values
+
+    if start is not None and end is not None:
+        dates_dt = pd.to_datetime(dates)
+        dates_dt = dates_dt[(dates_dt >= start) & (dates_dt <= end)]
+        dates = list(dates_dt.strftime('%Y-%m'))
+
+    filenames = [
+            glob('data/returns/raw/{}.parquet'.format(d))[0] for d in dates
+            ]
+
+    promises = []
+    for f in filenames:
+        res = dask.delayed(read_parquet)(f, permno)
+        promises.append(res)
+
+    return promises.compute()
 
 if __name__ == '__main__':
     pass
