@@ -7,6 +7,7 @@
 
 # import standard libraries
 from datetime import timedelta
+from dateutil.relativedelta import relativedelta
 from glob import glob
 import os
 from urllib.request import urlopen
@@ -141,19 +142,28 @@ def get_permno_returns(permno, const_mat, start=None, end=None):
     filenames = [
             glob('data/returns/raw/{}.parquet'.format(d))[0] for d in dates
             ]
-
-    # promises = []
-    # rp = dask.delayed(read_parquet)
-    # for f in filenames:
-    #     res = rp(f, [permno])
-    #     promises.append(res)
-
-    # return dask.compute(promises)
-
-    promises = []
-    for f in filenames:
-        promises.append(read_parquet(f, [permno]))
+    
+    rp = dask.delayed(read_parquet)
+    promises = [rp(f, [permno]) for f in filenames]
+    promises = dask.delayed(pd.concat)(promises)
+    
     return promises
+
+
+def get_2month_returns(end, const_mat):
+    
+    end_dt = pd.to_datetime(end)
+    start_dt = end_dt - relativedelta(months=1)
+    dates_dt = pd.date_range(start=start_dt, end=end_dt, freq='MS') 
+    dates = list(dates_dt.strftime('%Y-%m'))
+    permnos = const_mat.loc[end]
+    permnos = list(permnos[permnos == 1].index.values)
+    
+    filenames = [
+            glob('data/returns/raw/{}.parquet'.format(d))[0] for d in dates
+            ]
+    
+    return pd.concat([read_parquet(f, permnos) for f in filenames])
 
 
 if __name__ == '__main__':
