@@ -9,6 +9,7 @@
 from datetime import timedelta
 from dateutil.relativedelta import relativedelta
 from glob import glob
+import numpy as np
 import os
 from urllib.request import urlopen
 # import third-party libraries
@@ -60,11 +61,11 @@ def download_returns(db, start, end, permnos):
     data = data.set_index('date')
 
     # clean into dataframe
-    X = pd.DataFrame()
-    for per, df in data.groupby('permno'):
-        df.drop(columns='permno', inplace=True)
-        df.columns = [int(per)]
-        X = pd.concat([X, df], axis=1, ignore_index=False)
+    X = data.pivot(columns='permno', values='ret')
+    X.columns = X.columns.astype(int)
+    # add missing columns
+    miss_cols = list(set(permnos.astype(int)) - set(X.columns))
+    X[miss_cols] = np.nan
 
     return X
 
@@ -142,27 +143,27 @@ def get_permno_returns(permno, const_mat, start=None, end=None):
     filenames = [
             glob('data/returns/raw/{}.parquet'.format(d))[0] for d in dates
             ]
-    
+
     rp = dask.delayed(read_parquet)
     promises = [rp(f, [permno]) for f in filenames]
     promises = dask.delayed(pd.concat)(promises)
-    
+
     return promises
 
 
 def get_2month_returns(end, const_mat):
-    
+
     end_dt = pd.to_datetime(end)
     start_dt = end_dt - relativedelta(months=1)
-    dates_dt = pd.date_range(start=start_dt, end=end_dt, freq='MS') 
+    dates_dt = pd.date_range(start=start_dt, end=end_dt, freq='MS')
     dates = list(dates_dt.strftime('%Y-%m'))
     permnos = const_mat.loc[end]
     permnos = list(permnos[permnos == 1].index.values)
-    
+
     filenames = [
             glob('data/returns/raw/{}.parquet'.format(d))[0] for d in dates
             ]
-    
+
     return pd.concat([read_parquet(f, permnos) for f in filenames])
 
 

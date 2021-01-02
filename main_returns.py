@@ -47,7 +47,7 @@ if __name__ == '__main__':
             permnos = const_mat.loc[di][const_mat.loc[di] == 1].index.values
             returns = download_returns(db, d, dates_end[i], permnos)
 
-            # for parquet, columns and inx needs to be strings
+            # for parquet, columns and index needs to be strings
             returns.columns = returns.columns.astype(str)
             returns.index = returns.index.astype(str)
 
