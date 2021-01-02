@@ -72,7 +72,7 @@ def download_info(db, permnos):
     # get information of stocks
     data = \
         db.raw_sql(
-            f"select permno, comnam, ticker from crsp.dse where permno in "
+            f"select permno, comnam, naics, ticker from crsp.dse where permno in "
             f"({', '.join(permnos)})")
 
     data.dropna(axis=0, subset=['comnam', 'ticker'], how='all', inplace=True)
