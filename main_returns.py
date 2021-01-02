@@ -31,14 +31,16 @@ if __name__ == '__main__':
 
     for i, d in enumerate(dates_start):
         di = d[:7]
-        permnos = const_mat.loc[di][const_mat.loc[di] == 1].index.values
-        returns = download_returns(db, d, dates_end[i], permnos)
-
-        # for parquet, columns and inx needs to be strings
-        returns.columns = returns.columns.astype(str)
-        returns.index = returns.index.astype(str)
 
         # save to parquet
         filename = f'data/returns/raw/{di}.parquet'
         if not os.path.exists(filename):
+
+            permnos = const_mat.loc[di][const_mat.loc[di] == 1].index.values
+            returns = download_returns(db, d, dates_end[i], permnos)
+
+            # for parquet, columns and inx needs to be strings
+            returns.columns = returns.columns.astype(str)
+            returns.index = returns.index.astype(str)
+
             returns.to_parquet(filename)
