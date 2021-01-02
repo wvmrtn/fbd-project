@@ -6,6 +6,7 @@
 """
 
 # import standard libraries
+import numpy as np
 import os
 # import third-party libraries
 import pandas as pd
@@ -23,6 +24,13 @@ if __name__ == '__main__':
     # download russell 3k
     const_mat = pd.read_csv('data/russell3000.csv.gz', compression='gzip',
                             index_col=0)
+
+    # since we are computing a multi-factor risk model over a month
+    # we need to also get data one month prior to being in the Russell 3k
+    # we replace 0 by 1 one month before
+    const_mat.replace(0, np.nan, inplace=True)  # replace all 0s by nan
+    const_mat.fillna(method='bfill', limit=1, inplace=True)
+    const_mat.fillna(value=0, inplace=True)
 
     dates_start = pd.date_range(START, END, freq='MS')
     dates_start = dates_start.strftime("%Y-%m-%d")
