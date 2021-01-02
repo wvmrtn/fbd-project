@@ -144,7 +144,7 @@ def get_permno_returns(permno, const_mat, start=None, end=None):
 
     promises = []
     for f in filenames:
-        res = dask.delayed(read_parquet)(f, permno)
+        res = dask.delayed(read_parquet)(f, [permno])
         promises.append(res)
 
     return dask.compute(promises)
