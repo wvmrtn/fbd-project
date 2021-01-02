@@ -142,13 +142,18 @@ def get_permno_returns(permno, const_mat, start=None, end=None):
             glob('data/returns/raw/{}.parquet'.format(d))[0] for d in dates
             ]
 
-    promises = []
-    rp = dask.delayed(read_parquet)
-    for f in filenames:
-        res = rp(f, [permno])
-        promises.append(res)
+    # promises = []
+    # rp = dask.delayed(read_parquet)
+    # for f in filenames:
+    #     res = rp(f, [permno])
+    #     promises.append(res)
 
-    return dask.compute(promises)
+    # return dask.compute(promises)
+
+    promises = []
+    for f in filenames:
+        promises.append(read_parquet(f, [permno]))
+    return promises
 
 
 if __name__ == '__main__':
