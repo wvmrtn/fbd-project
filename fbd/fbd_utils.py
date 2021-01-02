@@ -147,7 +147,8 @@ def get_permno_returns(permno, const_mat, start=None, end=None):
         res = dask.delayed(read_parquet)(f, permno)
         promises.append(res)
 
-    return promises.compute()
+    return dask.compute(promises)
+
 
 if __name__ == '__main__':
     pass
