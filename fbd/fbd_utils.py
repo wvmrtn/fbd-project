@@ -75,10 +75,13 @@ def download_info(db, permnos):
     # get information of stocks
     data = \
         db.raw_sql(
-            f"select permno, comnam, naics, ticker from crsp.dse where permno in "
-            f"({', '.join(permnos)})")
+            f"select permno, comnam, naics, ticker "
+            f"from crsp.dse "
+            f"where permno in ({', '.join(permnos)})"
+            )
 
-    data.dropna(axis=0, subset=['comnam', 'ticker'], how='all', inplace=True)
+    data.dropna(axis=0, subset=['comnam', 'ticker'],
+                how='all', inplace=True)
     data.drop_duplicates(inplace=True)
     data.reset_index(inplace=True, drop=True)
 
@@ -164,6 +167,7 @@ def get_2month_returns(end, const_mat):
             glob('data/returns/raw/{}.parquet'.format(d))[0] for d in dates
             ]
 
+    # non dask is faster if taking only 2 months
     return pd.concat([read_parquet(f, permnos) for f in filenames])
 
 
