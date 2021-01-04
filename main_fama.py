@@ -7,10 +7,13 @@
 
 # import standard libraries
 # import third-party libraries
+import pandas as pd
 # import local libraries
 from fbd import download_fama, START, END
 
 
 if __name__ == '__main__':
 
-    download_fama(START, END)
+    fama, mom, st_rev, lt_rev = download_fama(START, END)
+    fama = pd.concat([fama, mom, st_rev, lt_rev], axis=1)
+    fama.to_csv('data/fama/fama.csv.gz', compression='gzip')

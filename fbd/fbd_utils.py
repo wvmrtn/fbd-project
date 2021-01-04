@@ -90,27 +90,57 @@ def download_info(db, permnos):
 
 def download_fama(start, end):
 
+    filename = 'data/fama/temp.csv.zip'
+
+    def get_url_content(url):
+        url = urlopen(url)
+        output = open(filename, 'wb')
+        output.write(url.read())
+        output.close()
+
+    def filter_dates(df):
+        # turn index to date
+        df.index = pd.to_datetime(df.index, format='%Y%m%d')
+        # get between start and end
+        df = df[(df.index >= start) & (df.index <= end)]
+        return df
+
+    # get fama french 5 factors
     url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_5_Factors_2x3_daily_CSV.zip"
+    get_url_content(url)
 
-    # read zip file
-    filename = 'data/fama/fama_french.csv.zip'
-    url = urlopen(url)
-    output = open(filename, 'wb')
-    output.write(url.read())
-    output.close()
-
-    fama = pd.read_csv(filename, compression='zip', index_col=0,
-                       header=2)
+    fama = pd.read_csv(filename, compression='zip', index_col=0, header=2)
     os.remove(filename)
+    fama = filter_dates(fama)
 
-    # turn index to date
-    fama.index = pd.to_datetime(fama.index, format='%Y%m%d')
+    # get momentum
+    url = 'https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Momentum_Factor_daily_CSV.zip'
+    get_url_content(url)
 
-    # get between start and end
-    fama = fama[(fama.index >= start) & (fama.index <= end)]
+    mom = pd.read_csv(filename, compression='zip', index_col=0,
+                      skiprows=12, skipfooter=1, engine='python')
+    os.remove(filename)
+    mom = filter_dates(mom)
+    mom = mom.rename(columns = {'Mom   ': 'Mom'})
 
-    # save localy
-    fama.to_csv('data/fama/fama.csv.gz', compression='gzip')
+    # get st and lt rev
+    url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_ST_Reversal_Factor_daily_CSV.zip"
+    get_url_content(url)
+
+    st_rev = pd.read_csv(filename, compression='zip', index_col=0,
+                         skiprows=13, skipfooter=1, engine='python')
+    os.remove(filename)
+    st_rev = filter_dates(st_rev)
+
+    url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_LT_Reversal_Factor_daily_CSV.zip"
+    get_url_content(url)
+
+    lt_rev = pd.read_csv(filename, compression='zip', index_col=0,
+                         skiprows=13, skipfooter=1, engine='python')
+    os.remove(filename)
+    lt_rev = filter_dates(lt_rev)
+
+    return fama, mom, st_rev, lt_rev
 
 
 def read_parquet(filename, permnos=None):
