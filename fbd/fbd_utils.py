@@ -203,12 +203,12 @@ def get_monthly_returns(end, const_mat, months=2, delay=False):
         return pd.concat([read_parquet(f, permnos) for f in filenames])
     else:
         rp = dask.delayed(read_parquet)
-        promises = [rp(f, permnos) for f in filenames] 
+        promises = [rp(f, permnos) for f in filenames]
         return dask.delayed(pd.concat)(promises)
 
 
 def count_na(df, index):
-    
+
     num_na = df.isna().sum().to_frame().T
     num_na.index = [index]
     return num_na
