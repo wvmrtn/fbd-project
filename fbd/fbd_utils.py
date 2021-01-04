@@ -14,6 +14,7 @@ import os
 from urllib.request import urlopen
 # import third-party libraries
 import dask
+#import dask.dataframe as dd
 import pandas as pd
 # import local libraries
 
@@ -184,10 +185,10 @@ def get_permno_returns(permno, const_mat, start=None, end=None):
     return promises
 
 
-def get_2month_returns(end, const_mat):
+def get_monthly_returns(end, const_mat, months=2, delay=False):
 
     end_dt = pd.to_datetime(end)
-    start_dt = end_dt - relativedelta(months=1)
+    start_dt = end_dt - relativedelta(months=months-1)
     dates_dt = pd.date_range(start=start_dt, end=end_dt, freq='MS')
     dates = list(dates_dt.strftime('%Y-%m'))
     permnos = const_mat.loc[end]
@@ -197,8 +198,20 @@ def get_2month_returns(end, const_mat):
             glob('data/returns/raw/{}.parquet'.format(d))[0] for d in dates
             ]
 
-    # non dask is faster if taking only 2 months
-    return pd.concat([read_parquet(f, permnos) for f in filenames])
+    # non dask is faster if taking only 1 or 2 months at a time
+    if not delay:
+        return pd.concat([read_parquet(f, permnos) for f in filenames])
+    else:
+        rp = dask.delayed(read_parquet)
+        promises = [rp(f, permnos) for f in filenames] 
+        return dask.delayed(pd.concat)(promises)
+
+
+def count_na(df, index):
+    
+    num_na = df.isna().sum().to_frame().T
+    num_na.index = [index]
+    return num_na
 
 
 if __name__ == '__main__':
