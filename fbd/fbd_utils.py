@@ -214,5 +214,20 @@ def count_na(df, index):
     return num_na
 
 
+def ols_fast(X, y, permno):
+    # try other methods
+    #lr = LinearRegression().fit(X, y)
+    #beta = np.linalg.inv(X.T@X)@X.T@y
+    try:
+        m, c, _, _ = np.linalg.lstsq(X, y, rcond=None)
+    except:
+        m, c = np.array([np.nan]*num_feat), np.array([np.nan]*1)
+    
+    # create dataframe with loadinds
+    df = pd.DataFrame(columns=[permno], data=np.concatenate([c, m]))
+    
+    return df
+
+
 if __name__ == '__main__':
     pass
