@@ -14,6 +14,8 @@ import os
 from urllib.request import urlopen
 # import third-party libraries
 import dask
+from scipy.cluster.hierarchy import dendrogram
+from sklearn.linear_model import LinearRegression
 #import dask.dataframe as dd
 import pandas as pd
 # import local libraries
@@ -219,7 +221,10 @@ def ols_fast(X, y, permno):
     #lr = LinearRegression().fit(X, y)
     #beta = np.linalg.inv(X.T@X)@X.T@y
     try:
-        m, c, _, _ = np.linalg.lstsq(X, y, rcond=None)
+        # more robust ! 
+        lr = LinearRegression().fit(X, y)
+        m, c = np.array(lr.coef_), np.array([lr.intercept_])
+        #m, c, _, _ = np.linalg.lstsq(X, y, rcond=None) # not robust ! 
     except:
         m, c = np.array([np.nan]*X.shape[1]), np.array([np.nan]*1)
 
@@ -227,6 +232,29 @@ def ols_fast(X, y, permno):
     df = pd.DataFrame(columns=[permno], data=np.concatenate([c, m]))
 
     return df
+
+
+# source: https://scikit-learn.org/stable/auto_examples/cluster/plot_agglomerative_dendrogram.html
+def plot_dendrogram(model, **kwargs):
+    # Create linkage matrix and then plot the dendrogram
+
+    # create the counts of samples under each node
+    counts = np.zeros(model.children_.shape[0])
+    n_samples = len(model.labels_)
+    for i, merge in enumerate(model.children_):
+        current_count = 0
+        for child_idx in merge:
+            if child_idx < n_samples:
+                current_count += 1  # leaf node
+            else:
+                current_count += counts[child_idx - n_samples]
+        counts[i] = current_count
+
+    linkage_matrix = np.column_stack([model.children_, model.distances_,
+                                      counts]).astype(float)
+
+    # Plot the corresponding dendrogram
+    dendrogram(linkage_matrix, **kwargs)
 
 
 if __name__ == '__main__':
