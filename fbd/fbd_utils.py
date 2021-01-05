@@ -76,7 +76,7 @@ def download_info(db, permnos):
     # get information of stocks
     data = \
         db.raw_sql(
-            f"select permno, comnam, naics, ticker "
+            f"select permno, comnam, naics, siccd, ticker "
             f"from crsp.dse "
             f"where permno in ({', '.join(permnos)})"
             )
@@ -221,11 +221,11 @@ def ols_fast(X, y, permno):
     try:
         m, c, _, _ = np.linalg.lstsq(X, y, rcond=None)
     except:
-        m, c = np.array([np.nan]*num_feat), np.array([np.nan]*1)
-    
+        m, c = np.array([np.nan]*X.shape[1]), np.array([np.nan]*1)
+
     # create dataframe with loadinds
     df = pd.DataFrame(columns=[permno], data=np.concatenate([c, m]))
-    
+
     return df
 
 
