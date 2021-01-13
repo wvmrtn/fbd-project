@@ -1,2 +1,1 @@
-# fbd-project
-Financial Big Data Project
+# DAY TRADING CLUSTERS BUILT FROMMULTI-FACTOR MODELS
