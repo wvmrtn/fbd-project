@@ -1,1 +1,2 @@
-# DAY TRADING CLUSTERS BUILT FROMMULTI-FACTOR MODELS
+# Financial big data project
+Day trading clusters built from multi-factor models.
